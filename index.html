@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Imaging Atlas</title>
+<meta name="theme-color" content="#6c757d"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{--bg:#f3f4f6;--card:#fff;--tx:#1f2328;--mut:#6c757d;--ac:#2f7bd9;--pr:#6c757d;--bd:#dde0e4;--pa:#e8590c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root:not([data-theme="light"]){}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181c;--card:#20242a;--tx:#e8eaed;--bd:#333940;--mut:#9aa3ab;--ac:#5aa2f5}}
+:root[data-theme="dark"]{--bg:#15181c;--card:#20242a;--tx:#e8eaed;--bd:#333940;--mut:#9aa3ab;--ac:#5aa2f5}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,sans-serif;line-height:1.8;font-size:15px}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--pr);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;z-index:5}
+header h1{font-size:17px;margin:0;flex:1}header h1 span{color:#bcd9ff;font-size:12px;direction:ltr;display:inline-block}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:6px 12px}
+header button{background:#ffffff22;border-color:#ffffff44;color:#fff}
+button.p{background:var(--ac);color:#fff;border-color:var(--ac)}
+main{max-width:760px;margin:auto;padding:12px}
+nav.tabs{display:flex;gap:6px;margin-bottom:10px}nav.tabs button{flex:1}nav.tabs .on{background:var(--pr);color:#fff}
+input[type=search]{width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:10px 0}.chips button{white-space:nowrap;border-radius:99px;padding:3px 14px}.chips .on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:600px){.grid{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;overflow:hidden;cursor:pointer;position:relative}
+.card svg{display:block;width:100%;height:auto}.card div{padding:6px 10px;font-size:13px}
+.card small{color:var(--mut);direction:ltr;display:block;text-align:right}
+.star{position:absolute;top:4px;left:6px;background:#0008;color:#ffd43b;border:0;border-radius:99px;padding:0 8px}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin:10px 0}
+.box h3{margin:0 0 4px;font-size:14px;color:var(--ac)}.box p{margin:0}
+.big svg{width:100%;height:auto;border-radius:12px;display:block}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.opt{display:block;width:100%;text-align:right;margin:6px 0}.ok{background:#2b8a3e!important;color:#fff}.no{background:#c92a2a!important;color:#fff}
+label.ck{display:block;padding:6px 0;border-bottom:1px dashed var(--bd)}
+.mut{color:var(--mut);font-size:13px}
+.big img{width:100%;border-radius:12px;display:block;max-height:70vh;object-fit:contain;background:#000}.fs{position:fixed!important;inset:0;width:100%!important;height:100%!important;max-height:none!important;z-index:20;border-radius:0!important}
+</style>
+</head>
+<body>
+<header><h1>Imaging Atlas <span>آموزش تفسیر تصویربرداری</span></h1><button id="th">🌓</button></header>
+<main>
+<nav class="tabs"><button data-t="atlas">اطلس</button><button data-t="quiz">آزمون</button><button data-t="sim">شبیه‌ساز</button><button data-t="bk">★ نشان‌شده</button></nav>
+<div id="v"></div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const LS={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const A='#ffb020',P='#e8590c';
+/* ---------- SVG bases ---------- */
+const T=(x,y,t,c='#9fb3c8')=>`<text x="${x}" y="${y}" font-size="7" fill="${c}" text-anchor="middle" font-family="Vazirmatn,Tahoma">${t}</text>`;
+const AR=(x,y,tx,ty,l)=>`<line x1="${x}" y1="${y}" x2="${tx}" y2="${ty}" stroke="${A}" stroke-width="1.6" marker-end="url(#m)"/>`+T(x,y+(y<tx?-4:9),l,A);
+function base(k){
+let s='<rect width="200" height="200" fill="#0b0d10"/>';
+if(k=='cxr'){
+for(let i=0;i<6;i++){const y=45+i*20;s+=`<path d="M100 ${y}Q45 ${y-10} 22 ${y+28}M100 ${y}Q155 ${y-10} 178 ${y+28}" stroke="#666" fill="none" stroke-width="2"/>`}
+s+='<path d="M35 40Q18 100 33 160Q80 172 96 155L96 45Q62 25 35 40Z" fill="#2d3136"/><path d="M165 40Q182 100 167 160Q120 172 104 155L104 45Q138 25 165 40Z" fill="#2d3136"/>';
+s+='<rect x="97" y="28" width="6" height="150" fill="#555" opacity=".6"/><rect x="98.5" y="28" width="3" height="42" fill="#0b0d10"/>';
+s+='<ellipse cx="114" cy="122" rx="24" ry="30" fill="#8a9097"/><path d="M96 50Q100 40 104 50L108 92H92Z" fill="#7b8189"/>';
+s+='<path d="M30 160Q65 150 96 160M170 160Q135 150 104 160" stroke="#aaa" fill="none"/><path d="M30 34L96 48M170 34L104 48" stroke="#ccc" stroke-width="3"/>';
+s+=T(100,20,'تراشه ↓')+T(60,180,'دیافراگم R')+T(140,180,'L')+T(114,124,'قلب','#222')+T(50,110,'ریه راست')+T(150,110,'ریه چپ')}
+if(k=='brain'){
+s+='<ellipse cx="100" cy="100" rx="78" ry="88" fill="#ddd"/><ellipse cx="100" cy="100" rx="72" ry="82" fill="#6b6f74"/>';
+s+='<path d="M92 82Q100 70 108 82L106 100Q100 96 94 100Z" fill="#111"/><path d="M84 96Q70 110 76 128Q84 120 90 104Z" fill="#111"/><path d="M116 96Q130 110 124 128Q116 120 110 104Z" fill="#111"/>';
+s+=T(100,20,'استخوان جمجمه','#333')+T(100,68,'بطن‌ها','#ccc')+T(100,150,'پارانشیم')}
+if(k=='abd'){
+s+='<ellipse cx="100" cy="100" rx="88" ry="68" fill="#4b4f55"/><ellipse cx="100" cy="100" rx="88" ry="68" fill="none" stroke="#999" stroke-width="3"/>';
+s+='<circle cx="100" cy="128" r="14" fill="#c9ccd0"/><circle cx="98" cy="102" r="6" fill="#e8e8e8"/><ellipse cx="60" cy="112" rx="12" ry="16" fill="#8b9096"/><ellipse cx="140" cy="112" rx="12" ry="16" fill="#8b9096"/>';
+s+='<path d="M20 90Q40 60 80 62L90 100Q60 130 30 120Z" fill="#7b7f85"/>'+T(100,128,'ستون فقرات','#222')+T(98,86,'آئورت','#ccc')+T(60,112,'کلیه','#222')+T(45,88,'کبد','#ddd')}
+if(k=='us'){
+s+='<path d="M100 5L10 195H190Z" fill="#23272c"/><path d="M40 90Q70 60 100 100L100 150L50 150Z" fill="#7d838b"/><path d="M110 110Q140 90 165 120L150 165L110 160Z" fill="#666c73"/>';
+s+=T(72,120,'کبد','#111')+T(140,140,'کلیه','#111')+T(100,190,'مورّیسون پوچ','#ccc')}
+if(k=='mri'){
+s+='<ellipse cx="100" cy="100" rx="76" ry="86" fill="#3a3e44"/><ellipse cx="100" cy="100" rx="66" ry="76" fill="#9aa0a8"/><path d="M94 88Q100 76 106 88L105 106Q100 100 95 106Z" fill="#20242a"/>'+T(100,20,'DWI')}
+if(k=='xr'){
+s+='<rect x="20" y="82" width="160" height="36" rx="16" fill="#bbb"/><rect x="26" y="90" width="148" height="20" rx="9" fill="#666"/>'+T(100,140,'دیافیز استخوان بلند')}
+return s}
+let F=[];
+const CL={CXR:['چک کیفیت: نام، چرخش، بازدم، نفوذ','A: تراشه در خط وسط؟ کارینا','B: هر دو ریه مقایسه؛ پلور، زوایای کوستوفرنیک','C: اندازه قلب (CTR)، هیلوس، مدیاستن','D: دیافراگم و هوای زیر آن','E: دنده‌ها، ترقوه، شانه، بافت نرم، لوله‌ها'],CT:['اطلاعات و کنتراست را چک کن','ساختارها را به ترتیب: استخوان، خون، بطن‌ها','متقارن بودن، mass effect، shift','پنجره‌های مناسب را عوض کن','در شکم: آئورت، کبد، صفرا، کلیه، روده، مایع آزاد'],US:['پروب و ژل، عمق','هر ناحیه FAST را در دو صفحه ببین','مایع آزاد؟ (سیاه)','اندازه ساختارها','با یافته‌های بالینی تطبیق بده'],MRI:['توالی‌ها را شناسایی کن (T1/T2/FLAIR/DWI)','متقارن؟','DWI/ADC برای ایسکمی','کنتراست: enhancement؟','ارتباط با بالینی']};
+/* ---------- render ---------- */
+const svg=(f,path,label=true)=>{const a=(label&&path)?f[5].map(x=>AR(...x)).join(''):'';return`<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><defs><marker id="m" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0 0L5 2.5L0 5Z" fill="${A}"/></marker></defs>${base(f[3])}${path?f[4]:''}${a}</svg>`};
+let st={tab:'atlas',mod:'all',q:'',bk:LS.get('bk',[]),cur:null,path:true,show:false,qz:null};
+const esc=s=>s;
+function render(){
+document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t==st.tab));
+const v=$('#v');
+if(st.cur){detail(v);return}
+if(st.tab=='atlas'||st.tab=='bk'){
+const list=F.filter(f=>(st.tab=='bk'?st.bk.includes(f[0]):true)&&(st.mod=='all'||f[1]==st.mod)&&(!st.q||(f[2]+f[9]+f[1]).toLowerCase().includes(st.q.toLowerCase())));
+v.innerHTML=`<input type="search" id="q" placeholder="جستجوی یافته…" value="${st.q}"><div class="chips">${['all','CXR','CT','MRI','US','XR'].map(m=>`<button class="${st.mod==m?'on':''}" data-m="${m}">${m=='all'?'همه':m}</button>`).join('')}</div><div class="grid">${list.map(f=>`<div class="card" data-id="${f[0]}">${svg(f,true,false)}<button class="star" data-s="${f[0]}">${st.bk.includes(f[0])?'★':'☆'}</button><div>${f[2]}<small>${f[1]}</small></div></div>`).join('')||'<p class="mut">موردی نیست.</p>'}</div>`;
+const q=$('#q');q.oninput=e=>{st.q=e.target.value;const p=e.target.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(p,p)};
+}else if(st.tab=='quiz')quiz(v);
+else sim(v);
+}
+function imgHTML(f){if(st.mode=='real'){return '<img src="'+(st.photo||f[11])+'" onclick="this.classList.toggle(\'fs\')" onerror="noimg()">'}return svg(f,st.mode=='path')}
+window.noimg=()=>{st.mode='path';render()};
+const DB=()=>new Promise(r=>{const q=indexedDB.open('atlas',1);q.onupgradeneeded=()=>q.result.createObjectStore('p');q.onsuccess=()=>r(q.result)});
+const dbget=async k=>{const d=await DB();return new Promise(r=>{const g=d.transaction('p').objectStore('p').get(k);g.onsuccess=()=>r(g.result)})};
+const dbput=async(k,v)=>{const d=await DB();d.transaction('p','readwrite').objectStore('p').put(v,k)};
+function detail(v){const f=F.find(x=>x[0]==st.cur);
+if(st.photo===undefined){st.photo=null;dbget(f[0]).then(p=>{if(p&&st.cur==f[0]){st.photo=p;render()}}).catch(()=>{})}
+const cap={real:'عکس واقعی (لمس = تمام‌صفحه)',path:'شماتیک پاتولوژیک',norm:'شماتیک نرمال'}[st.mode];
+v.innerHTML=`<button id="bk0">← بازگشت</button><div class="box big">${imgHTML(f)}<p class="mut">${cap}${f[12]?' — منبع: '+f[12]:''}</p></div>
+<div class="row"><button data-md="real">عکس</button><button data-md="path">شماتیک</button><button data-md="norm">نرمال</button><button id="ph">📷 افزودن عکس</button><input type="file" id="fi" accept="image/*" hidden></div>
+<div class="row"><button class="p" id="ex">${st.show?'پنهان کردن تفسیر':'نمایش تفسیر'}</button><button id="sr">${st.bk.includes(f[0])?'★ نشان‌شده':'☆ نشان‌گذاری'}</button></div>
+<div class="box"><h3>${f[2]} — ${f[1]}</h3><p class="mut">تکنیک: ${f[6]}</p></div>
+${st.show?[['یافته کلیدی',f[7]],['تفسیر',f[8]],['تشخیص افتراقی',f[9]],['اقدام بعدی',f[10]]].map(x=>`<div class="box"><h3>${x[0]}</h3><p>${x[1]}</p></div>`).join(''):'<p class="mut">ابتدا خودتان تفسیر کنید، سپس «نمایش تفسیر».</p>'}
+<p class="mut">⚠ فقط آموزشی؛ جایگزین تصمیم بالینی نیست. عکس‌ها باید بدون اطلاعات بیمار باشند.</p>`;
+v.querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{st.mode=b.dataset.md;render()});
+$('#bk0').onclick=()=>{st.cur=null;render()};$('#ex').onclick=()=>{st.show=!st.show;render()};$('#sr').onclick=()=>tog(f[0]);
+$('#ph').onclick=()=>$('#fi').click();
+$('#fi').onchange=e=>{const file=e.target.files[0];if(!file)return;const im=new Image();im.onload=()=>{const c=document.createElement('canvas'),r=Math.min(1,1000/Math.max(im.width,im.height));c.width=im.width*r;c.height=im.height*r;c.getContext('2d').drawImage(im,0,0,c.width,c.height);const d=c.toDataURL('image/webp',.8);dbput(f[0],d);st.photo=d;st.mode='real';render()};im.src=URL.createObjectURL(file)};}
+function tog(id){st.bk=st.bk.includes(id)?st.bk.filter(x=>x!=id):[...st.bk,id];LS.set('bk',st.bk);render()}
+function quiz(v){
+const sc=LS.get('sc',{c:0,t:0});
+if(!st.qz){const f=F[Math.random()*F.length|0];const o=[f,...F.filter(x=>x!=f).sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5);st.qz={f,o,a:null}}
+const {f,o,a}=st.qz;
+v.innerHTML=`<div class="box">امتیاز ذخیره‌شده: ${sc.c} از ${sc.t}</div><div class="box big">${svg(f,true,false)}<p class="mut">تشخیص شما چیست؟ (${f[1]})</p></div>${o.map(x=>`<button class="opt ${a?(x==f?'ok':(a==x[0]?'no':'')):''}" data-a="${x[0]}">${x[2]}</button>`).join('')}${a?`<div class="box"><h3>توضیح کامل</h3><p><b>${f[7]}</b></p><p>${f[8]}</p><p class="mut">DDx: ${f[9]}</p><p class="mut">اقدام: ${f[10]}</p></div><button class="p" id="nx">سؤال بعدی</button> <button id="rs">ریست امتیاز</button>`:''}`;
+v.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(st.qz.a)return;st.qz.a=b.dataset.a;const s=LS.get('sc',{c:0,t:0});s.t++;if(b.dataset.a==f[0])s.c++;LS.set('sc',s);render()});
+const n=$('#nx');if(n)n.onclick=()=>{st.qz=null;render()};const r=$('#rs');if(r)r.onclick=()=>{LS.set('sc',{c:0,t:0});render()}}
+function sim(v){const s=LS.get('ck',{});
+v.innerHTML=Object.keys(CL).map(m=>`<div class="box"><h3>چک‌لیست ${m} — قبل از نگاه کردن، سپس ناحیه‌ها، سپس جستجوی یافته</h3>${CL[m].map((t,i)=>`<label class="ck"><input type="checkbox" data-k="${m}${i}" ${s[m+i]?'checked':''}> ${t}</label>`).join('')}</div>`).join('');
+v.querySelectorAll('input').forEach(c=>c.onchange=()=>{const s=LS.get('ck',{});s[c.dataset.k]=c.checked;LS.set('ck',s)})}
+document.addEventListener('click',e=>{
+const t=e.target;
+if(t.dataset.t){st.tab=t.dataset.t;st.cur=null;st.qz=null;render();return}
+if(t.dataset.m){st.mod=t.dataset.m;render();return}
+if(t.dataset.s){e.stopPropagation();tog(t.dataset.s);return}
+const c=t.closest('.card');if(c){st.cur=c.dataset.id;st.mode='real';st.photo=undefined;st.show=false;render();scrollTo(0,0)}});
+$('#th').onclick=()=>{const d=document.documentElement,dk=getComputedStyle(d).getPropertyValue('--bg').trim()=='#15181c';d.dataset.theme=dk?'light':'dark';LS.set('th',d.dataset.theme)};
+const th=LS.get('th',null);if(th)document.documentElement.dataset.theme=th;
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+render();fetch('cases.json').then(r=>r.json()).then(j=>{F=j;render()}).catch(()=>{$('#v').innerHTML='<p>خطا در بارگذاری cases.json — اپ باید از روی HTTPS/سرور باز شود.</p>'});
+</script>
+</body>
+</html>
